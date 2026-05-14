@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demand Engineering Artifact Generator | DoD Gov IT</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Share+Tech+Mono&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060D1A;--panel:#0B1525;--border:#1A2E4A;
+  --accent:#00A8E8;--accent-dim:#005C80;--gold:#F59E0B;
+  --green:#10B981;--red:#EF4444;--purple:#A78BFA;
+  --orange:#F97316;--teal:#2DD4BF;--cyan:#06B6D4;
+  --muted:#475569;--text:#CBD5E1;--bright:#F1F5F9;
+}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--panel)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+button{transition:opacity .15s;cursor:pointer}button:hover:not(:disabled){opacity:.82}
+/* HEADER */
+#header{background:var(--panel);border-bottom:2px solid var(--accent);padding:.75rem 1.6rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+#header h1{font-size:.62rem;font-weight:800;letter-spacing:.18em;color:var(--accent);font-family:'Share Tech Mono',monospace}
+#header p{font-size:.54rem;color:var(--muted);margin-top:2px}
+.fouo{font-size:.54rem;font-weight:700;color:var(--gold);border:1px solid var(--gold);padding:3px 8px;letter-spacing:.1em;font-family:'Share Tech Mono',monospace}
+/* WRAP */
+#wrap{max-width:980px;margin:0 auto;padding:1.6rem 1.3rem}
+/* API KEY BANNER */
+#key-banner{background:var(--panel);border:1px solid var(--gold);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.4rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#key-banner label{font-size:.62rem;font-weight:800;color:var(--gold);letter-spacing:.1em;white-space:nowrap;font-family:'Share Tech Mono',monospace}
+#key-input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--bright);font-size:.7rem;font-family:'Share Tech Mono',monospace;outline:none}
+#key-input:focus{border-color:var(--accent)}
+#key-save{background:var(--gold);color:#000;border:none;border-radius:4px;padding:6px 14px;font-size:.62rem;font-weight:800;letter-spacing:.08em;font-family:'Share Tech Mono',monospace}
+#key-status{font-size:.58rem;color:var(--green);font-weight:700;display:none}
+.key-note{font-size:.58rem;color:var(--muted);width:100%}
+/* STAGES */
+#stages{display:flex;align-items:center;margin-bottom:1.8rem}
+.stage-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.stage-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:2px solid var(--border);background:var(--panel);transition:all .3s}
+.stage-dot.active{border-color:var(--accent);background:var(--accent);box-shadow:0 0 14px #00A8E855}
+.stage-dot.done{border-color:var(--green);background:var(--green)}
+.stage-label{font-size:.52rem;font-weight:700;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;text-align:center;max-width:72px;line-height:1.3}
+.stage-label.active{color:var(--accent)}
+.stage-label.done{color:var(--green)}
+.stage-line{flex:1;height:2px;background:var(--border);margin:0 4px;margin-bottom:18px;transition:background .3s;max-width:48px}
+.stage-line.done{background:var(--green)}
+/* UPLOAD */
+#upload-zone{border:2px dashed var(--accent-dim);border-radius:12px;padding:3rem 2rem;text-align:center;cursor:pointer;background:var(--panel);transition:border-color .2s}
+#upload-zone:hover{border-color:var(--accent)}
+#upload-zone h2{font-size:.9rem;font-weight:700;color:var(--bright);margin-bottom:6px}
+#upload-zone p{font-size:.67rem;color:var(--muted);margin-bottom:1.2rem}
+.artifact-preview-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px;max-width:640px;margin:0 auto}
+.chip-group{background:var(--bg);border-radius:4px;padding:8px 10px}
+.chip-group-label{font-size:.5rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.chip-item{font-size:.56rem;color:var(--muted);margin-bottom:2px}
+/* EXTRACT */
+#extract-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.6rem}
+#extract-panel h3{font-size:.88rem;font-weight:700;color:var(--bright);margin-bottom:4px}
+#extract-panel .char-count{font-size:.6rem;color:var(--green)}
+#doc-preview{background:#060D1A;border-radius:6px;padding:.8rem;max-height:130px;overflow-y:auto;margin:1rem 0}
+#doc-preview pre{font-size:.58rem;color:var(--muted);white-space:pre-wrap;font-family:'Share Tech Mono',monospace}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px 24px;font-size:.7rem;font-weight:800;letter-spacing:.1em;font-family:'Share Tech Mono',monospace;width:100%}
+.btn-primary:disabled{background:var(--accent-dim);cursor:wait}
+/* SUMMARY */
+#summary-panel{background:var(--panel);border:1px solid #00A8E833;border-radius:8px;padding:1rem;margin-bottom:.6rem}
+#summary-panel .sec-label{font-size:.56rem;font-weight:800;color:var(--accent);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.7rem}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:8px}
+.summary-item label{font-size:.5rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block}
+.summary-item span{font-size:.68rem;color:var(--bright)}
+#summary-text{padding:8px 10px;background:#060D1A;border-radius:5px;font-size:.65rem;color:var(--text);line-height:1.6}
+/* SECTION DIVIDER */
+.sec-divider{display:flex;align-items:center;gap:10px;margin:10px 0 6px}
+.sec-divider span{font-size:.56rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.sec-divider .cnt{font-size:.54rem;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.sec-divider .line{flex:1;height:1px}
+/* ARTIFACT CARDS */
+.artifact-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:all .3s;margin-bottom:6px}
+.artifact-card.ready{box-shadow:0 0 12px rgba(0,0,0,.3)}
+.card-header{padding:.8rem 1rem;display:flex;align-items:center;gap:.65rem}
+.card-header.clickable{cursor:pointer}
+.badge{font-size:.56rem;font-weight:800;letter-spacing:.1em;color:#fff;padding:2px 7px;border-radius:2px;font-family:'Share Tech Mono',monospace;white-space:nowrap}
+.card-title{font-size:.78rem;font-weight:700;color:var(--bright)}
+.card-desc{font-size:.6rem;color:var(--muted);margin-top:1px}
+.card-actions{display:flex;gap:7px;align-items:center;margin-left:auto}
+.btn-gen{color:#fff;border:none;border-radius:4px;padding:5px 11px;font-size:.61rem;font-weight:800;letter-spacing:.06em;font-family:'Share Tech Mono',monospace}
+.btn-gen:disabled{opacity:.5;cursor:wait}
+.btn-export{background:transparent;border-radius:4px;padding:4px 9px;font-size:.61rem;font-weight:800;letter-spacing:.06em;font-family:'Share Tech Mono',monospace}
+.ready-tag{font-size:.58rem;font-weight:800;color:var(--green)}
+.toggle-arrow{font-size:.68rem;color:var(--muted)}
+/* CARD BODY */
+.card-body{padding:.9rem 1rem;max-height:420px;overflow-y:auto;border-top:1px solid var(--border)}
+.card-body.hidden{display:none}
+/* TABLES */
+.tbl-wrap{overflow-x:auto}
+table.art{width:100%;border-collapse:collapse;min-width:400px}
+table.art th{font-weight:800;padding:6px 9px;text-align:left;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+table.art td{padding:6px 9px;color:var(--text);border:1px solid var(--border);vertical-align:top;line-height:1.5;font-size:.66rem}
+table.art tr:nth-child(even){background:rgba(6,13,26,.5)}
+/* ZT MATURITY BAR */
+.zt-pillar{background:var(--bg);border-radius:4px;padding:10px 12px;margin-bottom:7px}
+.zt-pillar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px}
+.zt-pillar-name{font-size:.7rem;font-weight:800}
+.zt-scores{font-size:.6rem;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.mat-bar-wrap{position:relative;height:8px;background:var(--border);border-radius:4px;margin-bottom:6px}
+.mat-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.mat-target{position:absolute;top:-2px;width:2px;height:12px;background:var(--gold);border-radius:1px;transform:translateX(-50%)}
+.zt-state{font-size:.62rem;color:var(--text);margin-bottom:4px}
+.zt-gaps{display:flex;flex-wrap:wrap;gap:4px}
+.zt-gap-tag{font-size:.56rem;color:var(--red);background:rgba(239,68,68,.12);border-radius:3px;padding:2px 6px}
+/* STATUS PILLS */
+.pill{font-size:.56rem;font-weight:700;border-radius:3px;padding:1px 6px;white-space:nowrap;border:1px solid}
+.pill-green{color:var(--green);border-color:rgba(16,185,129,.4)}
+.pill-gold{color:var(--gold);border-color:rgba(245,158,11,.4)}
+.pill-cyan{color:var(--cyan);border-color:rgba(6,182,212,.4)}
+.pill-red{color:var(--red);border-color:rgba(239,68,68,.4)}
+/* CONTROL TAGS */
+.ctrl-tag{color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.54rem;background:rgba(0,168,232,.15);border-radius:2px;padding:1px 4px;display:inline-block;margin:1px}
+/* ZT GAP CARDS */
+.gap-card{background:var(--bg);border-radius:4px;padding:10px 12px;margin-bottom:7px;border-left:3px solid var(--border)}
+.gap-card-head{display:flex;gap:7px;align-items:center;margin-bottom:5px;flex-wrap:wrap}
+.gap-id{font-size:.58rem;font-weight:800;font-family:'Share Tech Mono',monospace}
+.gap-pillar{font-size:.56rem;font-weight:700;color:var(--purple)}
+.gap-title{font-size:.68rem;font-weight:700;color:var(--bright);margin-bottom:3px}
+.gap-states{font-size:.62rem;color:var(--muted);margin-bottom:4px}
+.gap-remed{font-size:.64rem;color:var(--text)}
+/* OVERVIEW GRID */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;margin-bottom:10px}
+.ov-item{background:var(--bg);border-radius:4px;padding:8px 10px}
+.ov-item label{font-size:.5rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block}
+.ov-item span{font-size:.7rem;color:var(--bright);font-weight:400}
+.ov-item span.critical{color:var(--red);font-weight:700}
+.ov-item span.high{color:var(--gold);font-weight:700}
+.cat-row{display:flex;gap:16px;padding:8px 10px;background:var(--bg);border-radius:4px;margin-bottom:7px}
+.cat-col label{font-size:.5rem;color:var(--muted);display:block}
+.cat-col span{font-size:.7rem;font-weight:700}
+.zt-strat{background:var(--bg);border-radius:4px;padding:8px 10px;margin-bottom:7px;font-size:.66rem;line-height:1.6}
+.zt-strat label{font-size:.52rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+.fw-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.fw-tag{font-size:.54rem;border-radius:3px;padding:2px 7px;font-family:'Share Tech Mono',monospace;border:1px solid}
+/* BUTTONS BOTTOM */
+.btn-group{background:transparent;border-radius:5px;padding:8px;font-size:.65rem;font-weight:800;letter-spacing:.1em;font-family:'Share Tech Mono',monospace;width:100%;margin-bottom:6px}
+.btn-all{background:rgba(245,158,11,.12);color:var(--gold);border:1px solid var(--gold);border-radius:6px;padding:10px;font-size:.7rem;font-weight:800;letter-spacing:.1em;font-family:'Share Tech Mono',monospace;width:100%;margin-bottom:6px}
+.btn-reset{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:7px;font-size:.61rem;font-weight:700;letter-spacing:.08em;font-family:'Share Tech Mono',monospace;width:100%}
+/* ALL READY */
+#all-ready{text-align:center;padding:.9rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;margin-bottom:6px;display:none}
+#all-ready h3{font-size:.76rem;font-weight:800;color:var(--green);letter-spacing:.1em}
+#all-ready p{font-size:.6rem;color:var(--muted);margin-top:3px}
+/* ZT BANNER */
+.zt-banner{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:6px;padding:7px 12px;font-size:.6rem;color:var(--cyan);margin-bottom:6px}
+/* CONMON */
+.conmon-strat{background:var(--bg);border-radius:4px;padding:8px 10px;font-size:.65rem;line-height:1.6;margin-bottom:10px}
+/* RESPONSIVE */
+@media(max-width:600px){.artifact-preview-chips{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr 1fr}.ov-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div>
+    <h1>DEMAND ENGINEERING ARTIFACT GENERATOR</h1>
+    <p>DoD / Gov IT &nbsp;·&nbsp; ISSE + ZT Pipeline &nbsp;·&nbsp; Powered by Google Gemini &nbsp;·&nbsp; <span id="header-count">0/15</span> Artifacts Ready</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span id="header-ready" style="font-size:.56rem;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace;display:none"></span>
+    <span class="fouo">FOUO</span>
+  </div>
+</div>
+
+<div id="wrap">
+
+  <!-- API KEY BANNER -->
+  <div id="key-banner">
+    <label>🔑 GEMINI API KEY</label>
+    <input id="key-input" type="password" placeholder="Paste your Gemini API key here — aistudio.google.com" />
+    <button id="key-save" onclick="saveKey()">SAVE KEY</button>
+    <span id="key-status">✓ Key saved for this session</span>
+    <p class="key-note">Your key stays in browser memory only — never sent anywhere except Google's API. Get a free key at <strong>aistudio.google.com</strong> → Get API Key.</p>
+  </div>
+
+  <!-- STAGE INDICATOR -->
+  <div id="stages">
+    <div class="stage-item">
+      <div class="stage-dot active" id="dot-upload">⬆</div>
+      <div class="stage-label active" id="lbl-upload">Upload Doc</div>
+    </div>
+    <div class="stage-line" id="line-0"></div>
+    <div class="stage-item">
+      <div class="stage-dot" id="dot-extract">⚙</div>
+      <div class="stage-label" id="lbl-extract">AI Extract</div>
+    </div>
+    <div class="stage-line" id="line-1"></div>
+    <div class="stage-item">
+      <div class="stage-dot" id="dot-artifacts">📋</div>
+      <div class="stage-label" id="lbl-artifacts">Artifacts</div>
+    </div>
+    <div class="stage-line" id="line-2"></div>
+    <div class="stage-item">
+      <div class="stage-dot" id="dot-export">⬇</div>
+      <div class="stage-label" id="lbl-export">Export</div>
+    </div>
+  </div>
+
+  <!-- UPLOAD STAGE -->
+  <div id="stage-upload">
+    <div id="upload-zone" onclick="document.getElementById('file-input').click()"
+         ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+      <div style="font-size:2.5rem;margin-bottom:.8rem">📄</div>
+      <h2>Drop Demand / Effort Document Here</h2>
+      <p>PDF · Word · Text — or click to browse</p>
+      <div class="artifact-preview-chips">
+        <div class="chip-group" style="border:1px solid rgba(0,168,232,.25)">
+          <div class="chip-group-label" style="color:var(--accent)">ENGINEERING</div>
+          <div class="chip-item">· Risk Register</div>
+          <div class="chip-item">· Constraints &amp; Opportunities</div>
+          <div class="chip-item">· Technical Interview Questions</div>
+          <div class="chip-item">· Kickoff Agenda &amp; Minutes</div>
+        </div>
+        <div class="chip-group" style="border:1px solid rgba(167,139,250,.25)">
+          <div class="chip-group-label" style="color:var(--purple)">RESOURCES</div>
+          <div class="chip-item">· Equipment &amp; Technology</div>
+          <div class="chip-item">· Networks Affected</div>
+          <div class="chip-item">· Applicable STIGs</div>
+          <div class="chip-item">· Manpower &amp; Resources</div>
+          <div class="chip-item">· Points of Contact</div>
+        </div>
+        <div class="chip-group" style="border:1px solid rgba(6,182,212,.25)">
+          <div class="chip-group-label" style="color:var(--cyan)">CYBER RMP / ZT</div>
+          <div class="chip-item">· RMP Executive Overview</div>
+          <div class="chip-item">· ZT Maturity Assessment</div>
+          <div class="chip-item">· ZT Control Mapping</div>
+          <div class="chip-item">· Security Control Baseline</div>
+          <div class="chip-item">· ZT Gap &amp; Remediation Plan</div>
+          <div class="chip-item">· Continuous Monitoring Strategy</div>
+        </div>
+      </div>
+      <input id="file-input" type="file" accept=".txt,.pdf,.docx,.md" style="display:none" onchange="handleFile(this.files[0])">
+    </div>
+  </div>
+
+  <!-- EXTRACT STAGE -->
+  <div id="stage-extract" style="display:none">
+    <div id="extract-panel">
+      <h3 id="doc-name">Document</h3>
+      <div class="char-count" id="char-count"></div>
+      <div id="doc-preview"><pre id="doc-text-preview"></pre></div>
+      <button class="btn-primary" id="extract-btn" onclick="runExtraction()">⚙ RUN AI EXTRACTION</button>
+    </div>
+  </div>
+
+  <!-- ARTIFACTS STAGE -->
+  <div id="stage-artifacts" style="display:none">
+
+    <!-- Summary -->
+    <div id="summary-panel">
+      <div class="sec-label">EXTRACTED DEMAND SUMMARY</div>
+      <div class="summary-grid" id="summary-grid"></div>
+      <div id="summary-text"></div>
+    </div>
+
+    <!-- Engineering -->
+    <div class="sec-divider">
+      <div class="line" style="background:linear-gradient(90deg,transparent,rgba(0,168,232,.3))"></div>
+      <span style="color:var(--accent)">Engineering Artifacts</span>
+      <span class="cnt" id="eng-count">0/4</span>
+      <div class="line" style="background:linear-gradient(90deg,rgba(0,168,232,.3),transparent)"></div>
+    </div>
+    <div id="eng-cards"></div>
+    <button class="btn-group" id="btn-gen-eng" style="color:var(--accent);border:1px solid var(--accent)" onclick="generateGroup('engineering')">⚡ GENERATE ALL ENGINEERING ARTIFACTS</button>
+
+    <!-- Resources -->
+    <div class="sec-divider" style="margin-top:10px">
+      <div class="line" style="background:linear-gradient(90deg,transparent,rgba(167,139,250,.3))"></div>
+      <span style="color:var(--purple)">Program Resource Sections</span>
+      <span class="cnt" id="res-count">0/5</span>
+      <div class="line" style="background:linear-gradient(90deg,rgba(167,139,250,.3),transparent)"></div>
+    </div>
+    <div id="res-cards"></div>
+    <button class="btn-group" id="btn-gen-res" style="color:var(--purple);border:1px solid var(--purple)" onclick="generateGroup('resources')">⚡ GENERATE ALL RESOURCE SECTIONS</button>
+
+    <!-- Cyber RMP -->
+    <div class="sec-divider" style="margin-top:10px">
+      <div class="line" style="background:linear-gradient(90deg,transparent,rgba(6,182,212,.3))"></div>
+      <span style="color:var(--cyan)">Cyber RMP / Zero Trust</span>
+      <span class="cnt" id="cyber-count">0/6</span>
+      <div class="line" style="background:linear-gradient(90deg,rgba(6,182,212,.3),transparent)"></div>
+    </div>
+    <div class="zt-banner">⬡ Zero Trust focus — DoD ZTMM v2.0 · NIST SP 800-207 · NIST SP 800-53 Rev 5 · RMF CA-7 · CISA ZTA Maturity Model</div>
+    <div id="cyber-cards"></div>
+    <button class="btn-group" id="btn-gen-cyber" style="color:var(--cyan);border:1px solid var(--cyan);background:rgba(6,182,212,.08)" onclick="generateGroup('cyber')">⚡ GENERATE ALL CYBER RMP / ZT ARTIFACTS</button>
+
+    <button class="btn-all" id="btn-gen-all" onclick="generateAll()">⚡ GENERATE ALL 15 ARTIFACTS AT ONCE</button>
+    <div id="all-ready"><h3>✓ ALL 15 ARTIFACTS READY</h3><p>Click ⬇ EXPORT on each card · Click any card header to preview inline</p></div>
+    <button class="btn-reset" onclick="resetApp()">↩ LOAD NEW DOCUMENT</button>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let docText = '';
+let extractedInfo = null;
+let artifacts = {};
+let loadingStates = {};
+let geminiKey = '';
+
+const ARTIFACT_DEFS = [
+  {id:'risk_register',   label:'Risk Register',                  tag:'RR',      color:'#EF4444', group:'engineering'},
+  {id:'constraints',     label:'Constraints & Opportunities',    tag:'C&O',     color:'#F59E0B', group:'engineering'},
+  {id:'interview_qs',    label:'Technical Interview Questions',  tag:'TIQ',     color:'#00A8E8', group:'engineering'},
+  {id:'kickoff',         label:'Kickoff Agenda & Minutes',       tag:'KO',      color:'#10B981', group:'engineering'},
+  {id:'equipment',       label:'Equipment & Technology List',    tag:'EQ',      color:'#A78BFA', group:'resources'},
+  {id:'networks',        label:'Networks Affected',              tag:'NET',     color:'#2DD4BF', group:'resources'},
+  {id:'stigs',           label:'Applicable STIGs',               tag:'STIG',    color:'#F97316', group:'resources'},
+  {id:'manpower',        label:'Manpower & Resources',           tag:'MR',      color:'#F59E0B', group:'resources'},
+  {id:'poc',             label:'Points of Contact',              tag:'POC',     color:'#10B981', group:'resources'},
+  {id:'rmp_overview',    label:'RMP Executive Overview',         tag:'RMP',     color:'#06B6D4', group:'cyber'},
+  {id:'zt_assessment',   label:'Zero Trust Maturity Assessment', tag:'ZT-MA',   color:'#A78BFA', group:'cyber'},
+  {id:'zt_controls',     label:'Zero Trust Control Mapping',     tag:'ZT-CM',   color:'#06B6D4', group:'cyber'},
+  {id:'control_baseline',label:'Security Control Baseline',      tag:'SCB',     color:'#EF4444', group:'cyber'},
+  {id:'zt_gaps',         label:'ZT Gap & Remediation Plan',      tag:'ZT-GAP',  color:'#F97316', group:'cyber'},
+  {id:'conmon',          label:'Continuous Monitoring Strategy', tag:'CONMON',  color:'#10B981', group:'cyber'},
+];
+
+// ============================================================
+// KEY MANAGEMENT
+// ============================================================
+function saveKey(){
+  geminiKey = document.getElementById('key-input').value.trim();
+  if(!geminiKey){alert('Please enter your Gemini API key.');return;}
+  document.getElementById('key-status').style.display='inline';
+  document.getElementById('key-input').value='●'.repeat(20);
+}
+
+// ============================================================
+// GEMINI API CALL
+// ============================================================
+async function callGemini(prompt){
+  if(!geminiKey){alert('Please save your Gemini API key first.');throw new Error('No API key');}
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+  const body = {
+    contents:[{parts:[{text: `You are a senior DoD Government IT Systems Engineer and ISSE/Zero Trust architect. Generate professional DoD engineering artifacts. Use precise DoD/RMF/ZT terminology. Reference real frameworks: NIST SP 800-53 Rev 5, NIST SP 800-207, DoD ZTMM v2.0, CISA ZTA. RESPOND WITH VALID JSON ONLY — no markdown fences, no explanation, no text outside the JSON.\n\n${prompt}`}]}],
+    generationConfig:{temperature:0.3,maxOutputTokens:2048}
+  };
+  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data = await res.json();
+  if(data.error){throw new Error(data.error.message);}
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  try{ return JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+  catch{ return {error:'Parse error',raw}; }
+}
+
+// ============================================================
+// FILE HANDLING
+// ============================================================
+function handleDrop(e){e.preventDefault();const f=e.dataTransfer.files[0];if(f)loadFile(f);}
+function handleFile(f){if(f)loadFile(f);}
+function loadFile(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    docText = e.target.result;
+    document.getElementById('doc-name').textContent = file.name;
+    document.getElementById('char-count').textContent = `Loaded — ${docText.length.toLocaleString()} characters`;
+    document.getElementById('doc-text-preview').textContent = docText.slice(0,600)+'...';
+    setStage('extract');
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// STAGE MANAGEMENT
+// ============================================================
+function setStage(stage){
+  ['upload','extract','artifacts'].forEach(s=>{
+    document.getElementById(`stage-${s}`).style.display='none';
+  });
+  document.getElementById(`stage-${stage}`).style.display='block';
+  const order=['upload','extract','artifacts','export'];
+  const idx=order.indexOf(stage==='artifacts'?'artifacts':stage);
+  order.forEach((s,i)=>{
+    const dot=document.getElementById(`dot-${s}`);
+    const lbl=document.getElementById(`lbl-${s}`);
+    if(!dot)return;
+    dot.classList.remove('active','done');
+    lbl.classList.remove('active','done');
+    if(i<idx){dot.classList.add('done');dot.textContent='✓';lbl.classList.add('done');}
+    else if(i===idx){dot.classList.add('active');lbl.classList.add('active');}
+  });
+  [0,1,2].forEach(i=>{
+    const line=document.getElementById(`line-${i}`);
+    if(line)line.classList.toggle('done',i<idx);
+  });
+}
+
+// ============================================================
+// EXTRACTION
+// ============================================================
+async function runExtraction(){
+  const btn=document.getElementById('extract-btn');
+  btn.disabled=true; btn.textContent='⚙  EXTRACTING...';
+  try{
+    extractedInfo = await callGemini(`Analyze this DoD demand document and extract key information. Return JSON only:
+{"program_name":"...","requester":"...","effort_type":"...","summary":"2-3 sentence summary","scope":"...","timeline":"...","key_systems":["..."],"classification":"FOUO or UNCLASS","stakeholders":["..."],"technical_domain":"...","key_requirements":["..."],"network_environment":"SIPRNET|NIPRNET|Both|Unknown"}
+DOCUMENT:\n${docText.slice(0,3500)}`);
+    buildSummary();
+    buildCards();
+    setStage('artifacts');
+  }catch(e){alert('Extraction failed: '+e.message);}
+  btn.disabled=false; btn.textContent='⚙  RUN AI EXTRACTION';
+}
+
+function buildSummary(){
+  const g=document.getElementById('summary-grid');
+  const fields=[['Program',extractedInfo.program_name],['Requester',extractedInfo.requester],['Effort Type',extractedInfo.effort_type],['Domain',extractedInfo.technical_domain],['Timeline',extractedInfo.timeline],['Network',extractedInfo.network_environment],['Classification',extractedInfo.classification]];
+  g.innerHTML=fields.map(([k,v])=>`<div class="summary-item"><label>${k}</label><span>${v||'—'}</span></div>`).join('');
+  document.getElementById('summary-text').textContent=extractedInfo.summary||'';
+}
+
+// ============================================================
+// CARD BUILDING
+// ============================================================
+function buildCards(){
+  ['engineering','resources','cyber'].forEach(group=>{
+    const container=document.getElementById(group==='engineering'?'eng-cards':group==='resources'?'res-cards':'cyber-cards');
+    container.innerHTML='';
+    ARTIFACT_DEFS.filter(d=>d.group===group).forEach(def=>{
+      const card=document.createElement('div');
+      card.className='artifact-card';
+      card.id=`card-${def.id}`;
+      card.innerHTML=`
+        <div class="card-header" id="header-${def.id}">
+          <span class="badge" style="background:${def.color}">${def.tag}</span>
+          <div><div class="card-title">${def.label}</div><div class="card-desc">${getDesc(def.id)}</div></div>
+          <div class="card-actions">
+            <button class="btn-gen" id="btn-${def.id}" style="background:${def.color}" onclick="generateOne('${def.id}')">GENERATE</button>
+          </div>
+        </div>
+        <div class="card-body hidden" id="body-${def.id}"></div>`;
+      container.appendChild(card);
+    });
+  });
+}
+
+function getDesc(id){
+  const m={
+    risk_register:'Identified risks, likelihood, impact, mitigation',
+    constraints:'Technical, schedule, resource constraints + opportunities',
+    interview_qs:'Pre-built question set for stakeholder technical interview',
+    kickoff:'Structured kickoff agenda with minutes template',
+    equipment:'All hardware, software, and tools required or in use',
+    networks:'Network environments, enclaves, and connectivity requirements',
+    stigs:'DISA STIG list applicable to this demand and its systems',
+    manpower:'Personnel roles, skill requirements, and resource allocations',
+    poc:'Key stakeholders, technical leads, and organizational contacts',
+    rmp_overview:'Program risk posture, authorization status, RMF lifecycle summary',
+    zt_assessment:'DoD ZTMM v2.0 pillar-by-pillar maturity scoring and gap analysis',
+    zt_controls:'ZT principles mapped to NIST 800-53 controls and implementation status',
+    control_baseline:'NIST SP 800-53 Rev 5 control families with implementation status',
+    zt_gaps:'Identified ZT gaps with prioritized remediation actions and owners',
+    conmon:'ISCM strategy, metrics, KPIs, and evidence collection aligned to RMF CA-7',
+  };
+  return m[id]||'';
+}
+
+// ============================================================
+// GENERATION
+// ============================================================
+const PROMPTS = {
+  risk_register: c=>`Generate a DoD risk register. Return JSON only:
+{"program":"...","date":"...","risks":[{"id":"RSK-01","description":"...","likelihood":"High|Medium|Low","impact":"Critical|High|Medium|Low","level":"Critical|High|Medium|Low","mitigation":"..."}]}
+6-8 risks. Context: ${c}`,
+
+  constraints: c=>`Generate DoD constraints and opportunities. Return JSON only:
+{"constraints":[{"category":"Technical|Schedule|Resource|Policy|Network|Compliance","description":"...","impact":"..."}],"opportunities":[{"area":"...","description":"...","benefit":"..."}]}
+5-6 constraints, 3-4 opportunities. Context: ${c}`,
+
+  interview_qs: c=>`Generate technical interview questions. Return JSON only:
+{"sections":[{"title":"Section Name","questions":["Q1","Q2","Q3","Q4"]}]}
+Sections: System Architecture, Security & RMF, Integration & Data Flow, Operational Requirements, Constraints & Risk. Context: ${c}`,
+
+  kickoff: c=>`Generate a kickoff meeting agenda. Return JSON only:
+{"meeting_title":"...","date":"TBD","location":"SIPRNET VTC / TBD","agenda":[{"time":"0900-0910","topic":"...","description":"...","owner":"..."}]}
+8-10 agenda items. Context: ${c}`,
+
+  equipment: c=>`Generate equipment and technology list. Return JSON only:
+{"equipment":[{"category":"Hardware|Software|Network Equipment|Security Tools|COTS","items":[{"name":"...","type":"...","purpose":"...","status":"Required|In Use|Planned"}]}]}
+3-4 categories, 3-5 items each. Context: ${c}`,
+
+  networks: c=>`Generate networks affected list. Return JSON only:
+{"networks":[{"name":"...","classification":"SIPRNET|NIPRNET|JWICS|Classified Enclave|Unclassified","role":"...","connectivity":"Direct|VPN|CDS|Air-Gapped|API","notes":"..."}]}
+Context: ${c}`,
+
+  stigs: c=>`Generate applicable DISA STIGs list. Return JSON only:
+{"stigs":[{"title":"Full DISA STIG Title","version":"VX RX","applicability":"...","cat1_findings":"...","priority":"High|Medium|Low"}]}
+7-10 real DISA STIG titles. Context: ${c}`,
+
+  manpower: c=>`Generate manpower and resources. Return JSON only:
+{"roles":[{"role":"...","grade":"O-4|GS-13|Contractor|CW2|SSgt|etc","responsibility":"...","hours":"X hrs/week","availability":"Full-time|Part-time|On-call"}],"resources":[{"name":"...","type":"Tool|License|Equipment|Training|Infrastructure","quantity":"...","purpose":"..."}]}
+6-8 roles, 3-5 resources. Context: ${c}`,
+
+  poc: c=>`Generate points of contact list. Return JSON only:
+{"contacts":[{"name":"[Billet TBD]","organization":"...","role":"...","phone":"DSN: TBD","email":"SIPR: TBD","notes":"..."}]}
+8-10 contacts. Context: ${c}`,
+
+  rmp_overview: c=>`Generate Cyber RMP executive overview with Zero Trust focus. Return JSON only:
+{"program":"...","classification":"...","rmf_phase":"Categorize|Select|Implement|Assess|Authorize|Monitor","authorization_status":"Pre-ATO|ATO In Progress|ATO Granted","system_categorization":{"confidentiality":"Low|Moderate|High","integrity":"Low|Moderate|High","availability":"Low|Moderate|High","overall":"Low|Moderate|High"},"risk_posture":"Low|Moderate|High|Critical","zt_strategy_summary":"2-3 sentence Zero Trust strategy","rmf_summary":"2-3 sentence RMF status","key_risks":["...","...","..."],"ato_target_date":"...","authorizing_official":"...","isso":"...","key_frameworks":["NIST SP 800-53 Rev 5","NIST SP 800-207","DoD ZTMM v2.0","CISA ZTA Maturity Model","NIST AI RMF 1.0"]}
+Context: ${c}`,
+
+  zt_assessment: c=>`Generate DoD Zero Trust Maturity Model v2.0 assessment. Score 1-5 (1=Traditional,2=Initial,3=Advanced,4=Optimal,5=Full ZT). Return JSON only:
+{"assessment_date":"...","overall_zt_maturity":"Traditional|Initial|Advanced|Optimal","overall_score":"X.X / 5.0","pillars":[{"pillar":"Identity","score":2,"level":"Initial","current_state":"...","gaps":["gap1","gap2"],"target_score":4,"priority":"Critical|High|Medium"},{"pillar":"Devices","score":2,"level":"Initial","current_state":"...","gaps":["gap1","gap2"],"target_score":4,"priority":"Critical|High|Medium"},{"pillar":"Networks","score":2,"level":"Initial","current_state":"...","gaps":["gap1","gap2"],"target_score":4,"priority":"Critical|High|Medium"},{"pillar":"Applications & Workloads","score":2,"level":"Initial","current_state":"...","gaps":["gap1"],"target_score":4,"priority":"High"},{"pillar":"Data","score":2,"level":"Initial","current_state":"...","gaps":["gap1"],"target_score":4,"priority":"High"},{"pillar":"Visibility & Analytics","score":2,"level":"Initial","current_state":"...","gaps":["gap1"],"target_score":4,"priority":"High"},{"pillar":"Automation & Orchestration","score":1,"level":"Traditional","current_state":"...","gaps":["gap1"],"target_score":3,"priority":"Medium"}]}
+Context: ${c}`,
+
+  zt_controls: c=>`Generate Zero Trust control mapping aligned to NIST SP 800-53 Rev 5. Return JSON only:
+{"mappings":[{"zt_principle":"Never Trust Always Verify","zt_pillar":"Identity","nist_controls":["IA-2","IA-3","AC-2","AC-3"],"implementation":"...","status":"Implemented|Partial|Planned|Not Started","gap":"..."},{"zt_principle":"Assume Breach","zt_pillar":"Networks","nist_controls":["SC-7","IR-4","AU-12","SI-4"],"implementation":"...","status":"Partial","gap":"..."},{"zt_principle":"Least Privilege Access","zt_pillar":"Identity","nist_controls":["AC-3","AC-6","IA-8"],"implementation":"...","status":"Partial","gap":"..."},{"zt_principle":"Micro-Segmentation","zt_pillar":"Networks","nist_controls":["SC-7","AC-4","SC-32"],"implementation":"...","status":"Planned","gap":"..."},{"zt_principle":"Continuous Validation","zt_pillar":"Visibility & Analytics","nist_controls":["CA-7","SI-4","AU-6","RA-5"],"implementation":"...","status":"Partial","gap":"..."},{"zt_principle":"Device Health Enforcement","zt_pillar":"Devices","nist_controls":["CM-8","CM-2","SI-2","IA-3"],"implementation":"...","status":"Partial","gap":"..."},{"zt_principle":"Data-Centric Security","zt_pillar":"Data","nist_controls":["SC-28","AC-16","MP-2"],"implementation":"...","status":"Planned","gap":"..."}]}
+Context: ${c}`,
+
+  control_baseline: c=>`Generate NIST SP 800-53 Rev 5 security control baseline. Return JSON only:
+{"impact_level":"Moderate|High","families":[{"family":"Access Control (AC)","selected_controls":["AC-2","AC-3","AC-6","AC-17"],"implementation_status":"Implemented|Partial|Planned","zt_relevance":"High|Medium|Low","notes":"..."},{"family":"Audit & Accountability (AU)","selected_controls":["AU-2","AU-6","AU-9","AU-12"],"implementation_status":"Partial","zt_relevance":"High","notes":"..."},{"family":"Configuration Management (CM)","selected_controls":["CM-2","CM-6","CM-7","CM-8"],"implementation_status":"Partial","zt_relevance":"High","notes":"..."},{"family":"Identification & Authentication (IA)","selected_controls":["IA-2","IA-3","IA-5","IA-8"],"implementation_status":"Partial","zt_relevance":"High","notes":"..."},{"family":"Incident Response (IR)","selected_controls":["IR-4","IR-6","IR-8"],"implementation_status":"Planned","zt_relevance":"Medium","notes":"..."},{"family":"System & Comm Protection (SC)","selected_controls":["SC-7","SC-8","SC-28","SC-32"],"implementation_status":"Partial","zt_relevance":"High","notes":"..."},{"family":"System & Info Integrity (SI)","selected_controls":["SI-2","SI-3","SI-4","SI-7"],"implementation_status":"Partial","zt_relevance":"High","notes":"..."},{"family":"Risk Assessment (RA)","selected_controls":["RA-3","RA-5","RA-7"],"implementation_status":"Planned","zt_relevance":"Medium","notes":"..."}]}
+Context: ${c}`,
+
+  zt_gaps: c=>`Generate Zero Trust gap and remediation plan. Return JSON only:
+{"gaps":[{"id":"ZT-GAP-01","pillar":"Identity|Devices|Networks|Applications & Workloads|Data|Visibility & Analytics|Automation & Orchestration","gap_description":"...","current_state":"...","target_state":"...","remediation_action":"...","nist_controls":["..."],"priority":"Critical|High|Medium|Low","effort":"Low|Medium|High","timeline":"0-30 days|30-90 days|90-180 days|180+ days","owner":"...","status":"Open|In Progress|Planned"}]}
+8-10 gaps covering all 7 ZT pillars. Prioritize Identity and Network gaps. Context: ${c}`,
+
+  conmon: c=>`Generate Continuous Monitoring Strategy aligned to NIST SP 800-137 and RMF CA-7 with ZT focus. Return JSON only:
+{"strategy_summary":"...","metrics":[{"metric_id":"CM-01","metric_name":"...","target":"...","frequency":"Daily|Weekly|Monthly|Real-time","nist_control":"CA-7|SI-4|etc","zt_pillar":"Identity|Devices|Networks|Data|Applications|Visibility|Automation"}],"alert_thresholds":[{"condition":"...","threshold":"...","action":"...","escalation_path":"..."}],"evidence_collection":[{"evidence_type":"...","source_system":"...","collection_method":"...","frequency":"...","rmf_use":"..."}],"reporting_cadence":{"daily":"...","weekly":"...","monthly":"..."}}
+8-10 metrics, 4-5 alert thresholds, 4-5 evidence types. Context: ${c}`,
+};
+
+async function generateOne(id){
+  if(!extractedInfo){alert('Please extract document info first.');return;}
+  const btn=document.getElementById(`btn-${id}`);
+  btn.disabled=true; btn.textContent='GENERATING...';
+  loadingStates[id]=true;
+  try{
+    const ctx=JSON.stringify(extractedInfo);
+    const data=await callGemini(PROMPTS[id](ctx));
+    artifacts[id]=data;
+    markCardReady(id);
+    renderCardBody(id,data);
+    updateCounts();
+  }catch(e){
+    btn.disabled=false; btn.textContent='GENERATE';
+    alert('Generation failed for '+id+': '+e.message);
+  }
+  loadingStates[id]=false;
+}
+
+function generateGroup(group){
+  ARTIFACT_DEFS.filter(d=>d.group===group&&!artifacts[d.id]&&!loadingStates[d.id]).forEach(d=>generateOne(d.id));
+}
+function generateAll(){
+  ['engineering','resources','cyber'].forEach(g=>generateGroup(g));
+}
+
+// ============================================================
+// CARD STATE
+// ============================================================
+function markCardReady(id){
+  const def=ARTIFACT_DEFS.find(d=>d.id===id);
+  const card=document.getElementById(`card-${id}`);
+  const header=document.getElementById(`header-${id}`);
+  card.classList.add('ready');
+  card.style.borderColor=def.color+'55';
+  card.style.boxShadow=`0 0 12px ${def.color}18`;
+  header.classList.add('clickable');
+  header.onclick=()=>toggleBody(id);
+  document.getElementById(`btn-${id}`).outerHTML=`
+    <span class="ready-tag">✓ READY</span>
+    <button class="btn-export" id="exp-${id}" style="color:${def.color};border:1px solid ${def.color}" onclick="event.stopPropagation();exportArtifact('${id}')">⬇ EXPORT</button>
+    <span class="toggle-arrow" id="arrow-${id}">▼</span>`;
+}
+
+function toggleBody(id){
+  const body=document.getElementById(`body-${id}`);
+  const arrow=document.getElementById(`arrow-${id}`);
+  const hidden=body.classList.contains('hidden');
+  body.classList.toggle('hidden',!hidden);
+  if(arrow)arrow.textContent=hidden?'▲':'▼';
+}
+
+// ============================================================
+// CARD BODY RENDERING
+// ============================================================
+function pill(status){
+  const map={'Implemented':'green','Partial':'gold','Planned':'cyan','Not Started':'red','In Progress':'accent','Open':'red','In Progress':'accent'};
+  const cls=map[status]||'gold';
+  return `<span class="pill pill-${cls}">${status}</span>`;
+}
+function ctrlTags(arr){return (arr||[]).map(c=>`<span class="ctrl-tag">${c}</span>`).join('');}
+function tbl(headers,rows,color){
+  const ths=headers.map(h=>`<th style="background:${color}22;color:${color};border:1px solid ${color}33">${h}</th>`).join('');
+  const trs=rows.map((r,i)=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+  return `<div class="tbl-wrap"><table class="art"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+}
+
+function renderCardBody(id,data){
+  const def=ARTIFACT_DEFS.find(d=>d.id===id);
+  const body=document.getElementById(`body-${id}`);
+  let html='';
+
+  if(id==='risk_register'&&data.risks)
+    html=tbl(['ID','Risk','Likelihood','Impact','Level','Mitigation'],data.risks.map(r=>[r.id,r.description,r.likelihood,r.impact,r.level,r.mitigation]),def.color);
+
+  else if(id==='constraints'&&data.constraints)
+    html=`<div style="font-size:.58rem;font-weight:800;color:var(--red);letter-spacing:.1em;margin-bottom:5px">CONSTRAINTS</div>`+
+      tbl(['Category','Constraint','Impact'],data.constraints.map(c=>[c.category,c.description,c.impact]),'#EF4444')+
+      (data.opportunities?`<div style="font-size:.58rem;font-weight:800;color:var(--green);letter-spacing:.1em;margin:8px 0 5px">OPPORTUNITIES</div>`+
+      tbl(['Area','Opportunity','Benefit'],data.opportunities.map(o=>[o.area,o.description,o.benefit]),'#10B981'):'');
+
+  else if(id==='interview_qs'&&data.sections)
+    html=data.sections.map(s=>`<div style="font-size:.58rem;font-weight:800;color:${def.color};letter-spacing:.1em;margin-bottom:4px;margin-top:8px">${s.title}</div><ol style="padding-left:16px;margin:0">${s.questions.map(q=>`<li style="font-size:.67rem;color:var(--text);margin-bottom:4px;line-height:1.5">${q}</li>`).join('')}</ol>`).join('');
+
+  else if(id==='kickoff'&&data.agenda)
+    html=data.agenda.map(a=>`<div style="display:flex;gap:10px;margin-bottom:8px"><div style="min-width:72px;font-size:.58rem;font-weight:700;color:${def.color};font-family:'Share Tech Mono',monospace;padding-top:1px">${a.time}</div><div><div style="font-size:.7rem;font-weight:700;color:var(--bright)">${a.topic}</div><div style="font-size:.62rem;color:var(--muted)">${a.description}</div>${a.owner?`<div style="font-size:.56rem;color:${def.color}">Owner: ${a.owner}</div>`:''}</div></div>`).join('');
+
+  else if(id==='equipment'&&data.equipment)
+    html=data.equipment.map(cat=>`<div style="font-size:.58rem;font-weight:800;color:${def.color};letter-spacing:.1em;margin-bottom:4px;margin-top:8px">${cat.category}</div>`+
+      tbl(['Item','Type','Purpose','Status'],cat.items.map(i=>[i.name,i.type,i.purpose,i.status]),def.color)).join('');
+
+  else if(id==='networks'&&data.networks)
+    html=tbl(['Network / Enclave','Classification','Role','Connectivity','Notes'],data.networks.map(n=>[n.name,n.classification,n.role,n.connectivity,n.notes]),def.color);
+
+  else if(id==='stigs'&&data.stigs)
+    html=tbl(['STIG Title','Version','Applies To','CAT I Finding','Priority'],data.stigs.map(s=>[s.title,s.version,s.applicability,s.cat1_findings,s.priority]),def.color);
+
+  else if(id==='manpower'&&data.roles)
+    html=tbl(['Role / Billet','Grade','Responsibility','Hours/Cycle','Availability'],data.roles.map(r=>[r.role,r.grade,r.responsibility,r.hours,r.availability]),def.color)+
+      (data.resources?`<div style="font-size:.58rem;font-weight:800;color:${def.color};letter-spacing:.1em;margin:8px 0 4px">ADDITIONAL RESOURCES</div>`+
+      tbl(['Resource','Type','Qty','Purpose'],data.resources.map(r=>[r.name,r.type,r.quantity,r.purpose]),def.color):'');
+
+  else if(id==='poc'&&data.contacts)
+    html=tbl(['Name / Billet','Organization','Role','Phone/DSN','Email/SIPR','Notes'],data.contacts.map(c=>[c.name,c.organization,c.role,c.phone,c.email,c.notes]),def.color);
+
+  else if(id==='rmp_overview'&&data.program){
+    const sc=data.system_categorization||{};
+    html=`<div class="ov-grid">${[['Program',data.program],['RMF Phase',data.rmf_phase],['Auth Status',data.authorization_status],['Risk Posture',data.risk_posture],['ATO Target',data.ato_target_date],['AO',data.authorizing_official],['ISSO',data.isso]].map(([k,v])=>`<div class="ov-item"><label>${k}</label><span class="${v==='Critical'?'critical':v==='High'?'high':''}">${v||'—'}</span></div>`).join('')}</div>`+
+      `<div class="cat-row"><div class="cat-col"><label>Confidentiality</label><span style="color:${sc.confidentiality==='High'?'var(--red)':sc.confidentiality==='Moderate'?'var(--gold)':'var(--green)'}">${sc.confidentiality||'—'}</span></div><div class="cat-col"><label>Integrity</label><span style="color:${sc.integrity==='High'?'var(--red)':sc.integrity==='Moderate'?'var(--gold)':'var(--green)'}">${sc.integrity||'—'}</span></div><div class="cat-col"><label>Availability</label><span style="color:${sc.availability==='High'?'var(--red)':sc.availability==='Moderate'?'var(--gold)':'var(--green)'}">${sc.availability||'—'}</span></div><div class="cat-col"><label>Overall</label><span style="color:${sc.overall==='High'?'var(--red)':sc.overall==='Moderate'?'var(--gold)':'var(--green)'};font-weight:800">${sc.overall||'—'}</span></div></div>`+
+      (data.zt_strategy_summary?`<div class="zt-strat"><label style="color:${def.color}">ZERO TRUST STRATEGY</label>${data.zt_strategy_summary}</div>`:'')+
+      (data.key_risks?`<div style="font-size:.58rem;font-weight:800;color:var(--red);letter-spacing:.1em;margin-bottom:5px">KEY RISKS</div><ul style="padding-left:16px;margin:0">${data.key_risks.map(r=>`<li style="font-size:.66rem;color:var(--text);margin-bottom:3px">${r}</li>`).join('')}</ul>`:'')+
+      (data.key_frameworks?`<div class="fw-tags">${data.key_frameworks.map(f=>`<span class="fw-tag" style="color:${def.color};border-color:${def.color}44">${f}</span>`).join('')}</div>`:'');
+  }
+
+  else if(id==='zt_assessment'&&data.pillars){
+    html=`<div style="display:flex;gap:14px;margin-bottom:10px">
+      <div class="ov-item" style="text-align:center"><label>Overall Score</label><span style="font-size:1.3rem;font-weight:800;color:${def.color}">${data.overall_score}</span></div>
+      <div class="ov-item" style="text-align:center"><label>ZT Maturity</label><span style="font-size:.82rem;font-weight:800;color:var(--gold)">${data.overall_zt_maturity}</span></div>
+    </div>`+
+    data.pillars.map(p=>`<div class="zt-pillar">
+      <div class="zt-pillar-head">
+        <span class="zt-pillar-name" style="color:${def.color}">${p.pillar}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:.56rem;color:${p.priority==='Critical'?'var(--red)':p.priority==='High'?'var(--gold)':'var(--muted)'};font-weight:700">${p.priority}</span>
+          <span class="zt-scores">Current: ${p.score}/5 → Target: ${p.target_score}/5</span>
+        </div>
+      </div>
+      <div class="mat-bar-wrap"><div class="mat-bar-fill" style="width:${(p.score/5)*100}%;background:${def.color}"></div><div class="mat-target" style="left:${(p.target_score/5)*100}%"></div></div>
+      <div class="zt-state">${p.current_state}</div>
+      <div class="zt-gaps">${(p.gaps||[]).map(g=>`<span class="zt-gap-tag">⚠ ${g}</span>`).join('')}</div>
+    </div>`).join('')+
+    `<div style="font-size:.54rem;color:var(--muted);font-style:italic;margin-top:4px">Gold marker = target score. Scale: 1=Traditional · 2=Initial · 3=Advanced · 4=Optimal · 5=Full ZT</div>`;
+  }
+
+  else if(id==='zt_controls'&&data.mappings)
+    html=`<div class="tbl-wrap"><table class="art" style="min-width:500px"><thead><tr>${['ZT Principle','Pillar','NIST Controls','Implementation','Status','Gap'].map(h=>`<th style="background:${def.color}22;color:${def.color};border:1px solid ${def.color}33">${h}</th>`).join('')}</tr></thead><tbody>${data.mappings.map((m,i)=>`<tr><td style="font-weight:700;color:var(--bright)">${m.zt_principle}</td><td style="color:${def.color}">${m.zt_pillar}</td><td>${ctrlTags(m.nist_controls)}</td><td>${m.implementation||''}</td><td>${pill(m.status)}</td><td style="color:var(--red)">${m.gap||''}</td></tr>`).join('')}</tbody></table></div>`;
+
+  else if(id==='control_baseline'&&data.families)
+    html=`<div style="font-size:.6rem;color:var(--muted);margin-bottom:8px">Impact Level: <strong style="color:${def.color}">${data.impact_level}</strong></div>`+
+    `<div class="tbl-wrap"><table class="art" style="min-width:500px"><thead><tr>${['Control Family','Selected Controls','Status','ZT Relevance','Notes'].map(h=>`<th style="background:${def.color}22;color:${def.color};border:1px solid ${def.color}33">${h}</th>`).join('')}</tr></thead><tbody>${data.families.map((f,i)=>`<tr><td style="font-weight:700;color:var(--bright);white-space:nowrap">${f.family}</td><td>${ctrlTags(f.selected_controls)}</td><td>${pill(f.implementation_status)}</td><td style="color:${f.zt_relevance==='High'?'var(--cyan)':f.zt_relevance==='Medium'?'var(--gold)':'var(--muted)'};font-weight:${f.zt_relevance==='High'?700:400}">${f.zt_relevance}</td><td>${f.notes||''}</td></tr>`).join('')}</tbody></table></div>`;
+
+  else if(id==='zt_gaps'&&data.gaps)
+    html=data.gaps.map(g=>`<div class="gap-card" style="border-left-color:${g.priority==='Critical'?'var(--red)':g.priority==='High'?'var(--gold)':'var(--muted)'}">
+      <div class="gap-card-head">
+        <span class="gap-id" style="color:${def.color}">${g.id}</span>
+        <span class="gap-pillar">${g.pillar}</span>
+        ${pill(g.status)}
+        <span style="font-size:.54rem;color:${g.priority==='Critical'?'var(--red)':g.priority==='High'?'var(--gold)':'var(--muted)'};font-weight:700">${g.priority}</span>
+        <span style="font-size:.54rem;color:var(--muted)">${g.timeline}</span>
+        <span style="margin-left:auto;font-size:.54rem;color:var(--muted)">Owner: ${g.owner||'TBD'}</span>
+      </div>
+      <div class="gap-title">${g.gap_description}</div>
+      <div class="gap-states">Current: ${g.current_state} → Target: ${g.target_state}</div>
+      <div class="gap-remed"><strong style="color:var(--green)">Remediation:</strong> ${g.remediation_action}</div>
+      <div style="margin-top:4px">${ctrlTags(g.nist_controls)}</div>
+    </div>`).join('');
+
+  else if(id==='conmon'&&data.metrics)
+    html=(data.strategy_summary?`<div class="conmon-strat">${data.strategy_summary}</div>`:'')+
+      `<div style="font-size:.58rem;font-weight:800;color:${def.color};letter-spacing:.1em;margin-bottom:5px">METRICS & KPIs</div>`+
+      tbl(['ID','Metric','Target','Frequency','ZT Pillar','NIST Control'],data.metrics.map(m=>[m.metric_id,m.metric_name,m.target,m.frequency,m.zt_pillar,m.nist_control]),def.color)+
+      (data.alert_thresholds?`<div style="font-size:.58rem;font-weight:800;color:var(--red);letter-spacing:.1em;margin:8px 0 5px">ALERT THRESHOLDS</div>`+
+      tbl(['Condition','Threshold','Action','Escalation'],data.alert_thresholds.map(a=>[a.condition,a.threshold,a.action,a.escalation_path]),'#EF4444'):'')+
+      (data.evidence_collection?`<div style="font-size:.58rem;font-weight:800;color:var(--green);letter-spacing:.1em;margin:8px 0 5px">EVIDENCE COLLECTION</div>`+
+      tbl(['Evidence Type','Source','Method','Frequency','RMF Use'],data.evidence_collection.map(e=>[e.evidence_type,e.source_system,e.collection_method,e.frequency,e.rmf_use]),'#10B981'):'');
+
+  else html=`<pre style="font-size:.6rem;color:var(--text);white-space:pre-wrap">${JSON.stringify(data,null,2)}</pre>`;
+
+  body.innerHTML=html;
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportArtifact(id){
+  const def=ARTIFACT_DEFS.find(d=>d.id===id);
+  const data=artifacts[id];
+  if(!data)return;
+  const line='='.repeat(64);
+  const hdr=`${line}\n${def.label.toUpperCase()}\nDoD / Government IT — Demand Engineering Artifact\nGenerated: ${new Date().toLocaleDateString()}\nPowered by: Demand Artifact Generator | Gemini AI\n${line}\n\n`;
+  let content=hdr;
+  try{
+    if(id==='risk_register'&&data.risks) content+=data.risks.map(r=>`[${r.id}] ${r.description}\n  Likelihood: ${r.likelihood} | Impact: ${r.impact} | Level: ${r.level}\n  Mitigation: ${r.mitigation}`).join('\n\n');
+    else if(id==='constraints'&&data.constraints) content+='CONSTRAINTS:\n\n'+data.constraints.map(c=>`[${c.category}] ${c.description}\n  Impact: ${c.impact}`).join('\n\n')+'\n\nOPPORTUNITIES:\n\n'+(data.opportunities?.map(o=>`[${o.area}] ${o.description}\n  Benefit: ${o.benefit}`).join('\n\n')||'');
+    else if(id==='interview_qs'&&data.sections) content+=data.sections.map(s=>`${s.title}\n${s.questions.map((q,i)=>`  ${i+1}. ${q}`).join('\n')}`).join('\n\n');
+    else if(id==='kickoff'&&data.agenda) content+=`MEETING: ${data.meeting_title||''}\nDATE: ${data.date||'TBD'}\nLOCATION: ${data.location||'TBD'}\n\n`+data.agenda.map(a=>`${a.time} — ${a.topic}\n  ${a.description}${a.owner?'\n  Owner: '+a.owner:''}`).join('\n\n');
+    else if(id==='equipment'&&data.equipment) content+=data.equipment.map(cat=>`${cat.category}\n${cat.items.map(i=>`  - ${i.name} [${i.type}] — ${i.purpose} (${i.status})`).join('\n')}`).join('\n\n');
+    else if(id==='networks'&&data.networks) content+=data.networks.map(n=>`${n.name}\n  Classification: ${n.classification}\n  Role: ${n.role}\n  Connectivity: ${n.connectivity}\n  Notes: ${n.notes}`).join('\n\n');
+    else if(id==='stigs'&&data.stigs) content+=data.stigs.map(s=>`STIG: ${s.title}\n  Version: ${s.version}\n  Applies To: ${s.applicability}\n  CAT I: ${s.cat1_findings}\n  Priority: ${s.priority}`).join('\n\n');
+    else if(id==='manpower'&&data.roles) content+=data.roles.map(r=>`ROLE: ${r.role} [${r.grade}]\n  Responsibility: ${r.responsibility}\n  Hours: ${r.hours}\n  Availability: ${r.availability}`).join('\n\n')+(data.resources?'\n\nRESOURCES:\n'+data.resources.map(r=>`  - ${r.name} [${r.type}] x${r.quantity} — ${r.purpose}`).join('\n'):'');
+    else if(id==='poc'&&data.contacts) content+=data.contacts.map(c=>`${c.name} — ${c.role}\n  Org: ${c.organization}\n  Phone: ${c.phone}\n  Email: ${c.email}\n  Notes: ${c.notes}`).join('\n\n');
+    else if(id==='rmp_overview') content+=`PROGRAM: ${data.program}\nRMF PHASE: ${data.rmf_phase}\nAUTH STATUS: ${data.authorization_status}\nRISK POSTURE: ${data.risk_posture}\nATO TARGET: ${data.ato_target_date}\nAO: ${data.authorizing_official}\nISSO: ${data.isso}\n\nSYSTEM CATEGORIZATION:\n  C: ${data.system_categorization?.confidentiality} | I: ${data.system_categorization?.integrity} | A: ${data.system_categorization?.availability} | Overall: ${data.system_categorization?.overall}\n\nZERO TRUST STRATEGY:\n${data.zt_strategy_summary}\n\nRMF SUMMARY:\n${data.rmf_summary}\n\nKEY RISKS:\n${data.key_risks?.map(r=>`  - ${r}`).join('\n')}\n\nFRAMEWORKS:\n${data.key_frameworks?.map(f=>`  - ${f}`).join('\n')}`;
+    else if(id==='zt_assessment'&&data.pillars) content+=`OVERALL: ${data.overall_zt_maturity} | SCORE: ${data.overall_score}\n\n`+data.pillars.map(p=>`PILLAR: ${p.pillar}\n  Score: ${p.score}/5 (${p.level}) → Target: ${p.target_score}/5 | Priority: ${p.priority}\n  Current: ${p.current_state}\n  Gaps:\n${p.gaps?.map(g=>`    - ${g}`).join('\n')}`).join('\n\n');
+    else if(id==='zt_controls'&&data.mappings) content+=data.mappings.map(m=>`PRINCIPLE: ${m.zt_principle} [${m.zt_pillar}]\n  Controls: ${m.nist_controls?.join(', ')}\n  Implementation: ${m.implementation}\n  Status: ${m.status}\n  Gap: ${m.gap}`).join('\n\n');
+    else if(id==='control_baseline'&&data.families) content+=`IMPACT LEVEL: ${data.impact_level}\n\n`+data.families.map(f=>`${f.family}\n  Controls: ${f.selected_controls?.join(', ')}\n  Status: ${f.implementation_status} | ZT Relevance: ${f.zt_relevance}\n  Notes: ${f.notes}`).join('\n\n');
+    else if(id==='zt_gaps'&&data.gaps) content+=data.gaps.map(g=>`[${g.id}] ${g.gap_description}\n  Pillar: ${g.pillar} | Priority: ${g.priority} | Status: ${g.status}\n  Timeline: ${g.timeline} | Owner: ${g.owner}\n  Current: ${g.current_state}\n  Target: ${g.target_state}\n  Remediation: ${g.remediation_action}\n  Controls: ${g.nist_controls?.join(', ')}`).join('\n\n');
+    else if(id==='conmon'&&data.metrics) content+=`STRATEGY:\n${data.strategy_summary}\n\nMETRICS:\n`+data.metrics.map(m=>`[${m.metric_id}] ${m.metric_name}\n  Target: ${m.target} | Freq: ${m.frequency} | ZT: ${m.zt_pillar} | Control: ${m.nist_control}`).join('\n\n')+(data.alert_thresholds?'\n\nALERT THRESHOLDS:\n'+data.alert_thresholds.map(a=>`  - ${a.condition} → ${a.threshold}\n    Action: ${a.action}`).join('\n\n'):'');
+    else content+=JSON.stringify(data,null,2);
+  }catch(e){content+=JSON.stringify(data,null,2);}
+  const blob=new Blob([content],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${id}_${Date.now()}.txt`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// COUNTS & RESET
+// ============================================================
+function updateCounts(){
+  const total=ARTIFACT_DEFS.length;
+  const ready=ARTIFACT_DEFS.filter(d=>artifacts[d.id]).length;
+  document.getElementById('header-count').textContent=`${ready}/${total}`;
+  if(ready>0){const el=document.getElementById('header-ready');el.textContent=`✓ ${ready}`;el.style.display='inline';}
+  document.getElementById('eng-count').textContent=ARTIFACT_DEFS.filter(d=>d.group==='engineering'&&artifacts[d.id]).length+'/4';
+  document.getElementById('res-count').textContent=ARTIFACT_DEFS.filter(d=>d.group==='resources'&&artifacts[d.id]).length+'/5';
+  document.getElementById('cyber-count').textContent=ARTIFACT_DEFS.filter(d=>d.group==='cyber'&&artifacts[d.id]).length+'/6';
+  const allReady=document.getElementById('all-ready');
+  if(ready===total){allReady.style.display='block';document.getElementById('btn-gen-all').style.display='none';}
+  const engDone=ARTIFACT_DEFS.filter(d=>d.group==='engineering'&&artifacts[d.id]).length===4;
+  const resDone=ARTIFACT_DEFS.filter(d=>d.group==='resources'&&artifacts[d.id]).length===5;
+  const cyberDone=ARTIFACT_DEFS.filter(d=>d.group==='cyber'&&artifacts[d.id]).length===6;
+  if(engDone)document.getElementById('btn-gen-eng').style.display='none';
+  if(resDone)document.getElementById('btn-gen-res').style.display='none';
+  if(cyberDone)document.getElementById('btn-gen-cyber').style.display='none';
+  // mark export stage
+  if(ready>0){const dot=document.getElementById('dot-export');const lbl=document.getElementById('lbl-export');dot.classList.add('active');dot.textContent='⬇';lbl.classList.add('active');}
+}
+
+function resetApp(){
+  docText='';extractedInfo=null;artifacts={};loadingStates={};
+  document.getElementById('stage-extract').style.display='none';
+  document.getElementById('stage-artifacts').style.display='none';
+  document.getElementById('stage-upload').style.display='block';
+  document.getElementById('header-count').textContent='0/15';
+  document.getElementById('header-ready').style.display='none';
+  document.getElementById('all-ready').style.display='none';
+  document.getElementById('btn-gen-all').style.display='block';
+  ['btn-gen-eng','btn-gen-res','btn-gen-cyber'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
+  setStage('upload');
+}
+</script>
+</body>
+</html>
