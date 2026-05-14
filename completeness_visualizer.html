@@ -297,7 +297,7 @@ function loadFile(file){
 
 async function callGemini(prompt){
   if(!geminiKey){alert('Save your Gemini API key first.');throw new Error('No key');}
-  var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+geminiKey;
+  var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+geminiKey;
   var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:4096}})});
   var data=await res.json();

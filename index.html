@@ -338,7 +338,7 @@ function saveKey(){
 // ============================================================
 async function callGemini(prompt){
   if(!geminiKey){alert('Please save your Gemini API key first.');throw new Error('No API key');}
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
   const body = {
     contents:[{parts:[{text: `You are a senior DoD Government IT Systems Engineer and ISSE/Zero Trust architect. Generate professional DoD engineering artifacts. Use precise DoD/RMF/ZT terminology. Reference real frameworks: NIST SP 800-53 Rev 5, NIST SP 800-207, DoD ZTMM v2.0, CISA ZTA. RESPOND WITH VALID JSON ONLY — no markdown fences, no explanation, no text outside the JSON.\n\n${prompt}`}]}],
     generationConfig:{temperature:0.3,maxOutputTokens:2048}
